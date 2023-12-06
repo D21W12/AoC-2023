@@ -1,4 +1,6 @@
 import numpy as np
+from math import sqrt
+from math import ceil
 
 
 def day_1_1(): # The filename of my puzzle input is called "puzzle_input", and is used for every function.
@@ -300,4 +302,144 @@ def day_5_2():
     return min(lowest)
 
 
-print(day_5_2())
+def day_6_1():
+    f = open("puzzle_input").read().split("\n")
+    time = [int(number) for number in f[0].split()[1:]]
+    distance = [int(number) for number in f[1].split()[1:]]
+    product = 1
+    for i in range(len(time)): # formula: 0 = x * (time - x) - distance -> 0 = -1x^2 + time * x - distance + 1
+        distances = [(-1*time[i] + sqrt(time[i]**2 - 4 * -1 * -1 * (distance[i] + 1)))/-2, (-1*time[i] - sqrt(time[i]**2 - 4 * -1 * -1 * (distance[i] + 1)))/-2]
+        product *= distances[1]//1 - ceil(distances[0]) + 1
+    return int(product)
+
+
+def day_6_2():
+    f = open("puzzle_input").read().split("\n")
+    time = int("".join([number for number in f[0].split()[1:]]))
+    distance = int("".join([number for number in f[1].split()[1:]]))
+    distances = [(-1 * time + sqrt(time ** 2 - 4 * -1 * -1 * (distance + 1))) / -2,
+                 (-1 * time - sqrt(time ** 2 - 4 * -1 * -1 * (distance + 1))) / -2]
+    product = distances[1] // 1 - ceil(distances[0]) + 1
+    return int(product)
+
+
+# print(day_6_2())
+
+
+# Down below I've made functions for AoC 2022 (For my own practice)
+
+
+def year_2022_day_3_1():
+    f = open("puzzle_input", "r").read().split("\n")
+    items = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    s = 0
+    for line in f:
+        double = list(set(line[:len(line)//2]) & set(line[len(line)//2:]))
+        s += items.index(double[0]) + 1
+    return s
+
+
+def year_2022_day_3_2():
+    f = open("puzzle_input", "r").read().split("\n")
+    items = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    return sum([items.index(list(set(f[i]) & set(f[i + 1]) & set(f[i + 2]))[0]) + 1 for i in range(0, len(f), 3)])
+
+
+def year_2022_day_5_2():
+    f = open("puzzle_input", "r").read().split("\n")
+    matrix = np.array([[f[i][j] for j in range(1, len(f[i]), 4)] for i in range(0, f.index("") - 1)])
+    matrix = [[matrix[j, i] for j in range(matrix.shape[0] - 1, -1, -1) if matrix[j, i] not in [" ", "0"]] for i in range(matrix.shape[1])]
+    for line in f[f.index("") + 1:]:
+        for i in range(int(line.split()[1]), 0, -1):
+            matrix[int(line.split()[5]) - 1].append(matrix[int(line.split()[3]) - 1].pop(-1 * i))
+    return "".join([matrix[i][-1] for i in range(len(matrix))])
+
+
+def year_2022_day_6_1():
+    f = open("puzzle_input", "r").read()
+    return [i for i in range(3, len(f)) if len(set(f[i-4:i])) == 4][0]
+
+
+def year_2022_day_6_2():
+    f = open("puzzle_input", "r").read()
+    return [i for i in range(13, len(f)) if len(set(f[i-14:i])) == 14][0]
+
+
+def year_2022_day_7_1():
+    f = open("puzzle_input", "r").read().split("\n")
+    dir = []
+    content = {}
+    sizes = {}
+    for line in f:
+        args = line.split()
+        if args[0] == "$":
+            if args[1] == "cd":
+                if args[2] != "..":
+                    dir.append(args[2])
+                    if dir[-1] not in content.keys():
+                        content["|".join(dir)] = []
+                else:
+                    dir.pop(-1)
+        else:
+            if (args[0], "|".join(dir) + "|" + args[1]) not in content["|".join(dir)]:
+                content["|".join(dir)].append((args[0], "|".join(dir) + "|" + args[1]))
+    print(content)
+    def det_size(files, dir):
+        size = 0
+        for file in files:
+            if file[0].isdigit():
+                size += int(file[0])
+            else:
+                if dir in sizes.keys():
+                    size += sizes[dir]
+                else:
+                    size += det_size(content[file[1]], file[1])
+        sizes[dir] = size
+        return size
+    s = 0
+    for dir, files in content.items():
+        size = det_size(files, dir)
+        if size <= 100000:
+            s += size
+    return s
+
+def year_2022_day_7_2():
+    f = open("puzzle_input", "r").read().split("\n")
+    dir = []
+    content = {}
+    sizes = {}
+    for line in f:
+        args = line.split()
+        if args[0] == "$":
+            if args[1] == "cd":
+                if args[2] != "..":
+                    dir.append(args[2])
+                    if dir[-1] not in content.keys():
+                        content["|".join(dir)] = []
+                else:
+                    dir.pop(-1)
+        else:
+            if (args[0], "|".join(dir) + "|" + args[1]) not in content["|".join(dir)]:
+                content["|".join(dir)].append((args[0], "|".join(dir) + "|" + args[1]))
+    def det_size(files, dir):
+        size = 0
+        for file in files:
+            if file[0].isdigit():
+                size += int(file[0])
+            else:
+                if dir in sizes.keys():
+                    size += sizes[dir]
+                else:
+                    size += det_size(content[file[1]], file[1])
+        sizes[dir] = size
+        return size
+    for dir, files in content.items():
+        det_size(files, dir)
+    potential_sizes = []
+    for dir, size in sizes.items():
+        if size >= 30000000 - (70000000 - sizes["/"]):
+            potential_sizes.append(int(size))
+    return min(potential_sizes)
+
+
+print(year_2022_day_7_2())
